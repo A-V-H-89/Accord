@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Accord calculation</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+</head>
+
+    <style>
+        .error {
+            border: solid 1px red;
+        }
+    </style>
+</head>
+
+<body>  
+    <div class="container pt-0">
+        <img src="https://loe-ror.no/wp-content/uploads/2020/12/loe-rorprodukter-logo-300px.jpg" alt="image">
+    </div>      
+    <div class="container pt-5">
+        <div class="row mb-3 align-items-end">
+            <div class="col"><span id='text-accord'>ACCORD</span></div>
+            <div class="col">
+                <span class="text d-none text-danger">Dette feltet er obligatorisk</span>
+                <input type='number' class='form-control' id='accord' />
+            </div>
+            <div class="col">Beregne</div>
+        </div>
+        <div class="row mb-3 align-items-end">
+            <div class="col"><span id='text-producing'>MENGDE</span></div>
+            <div class="col">
+                <span class="text d-none text-danger">Dette feltet er obligatorisk</span>
+                <input type='number' class='form-control align-middle' id='producing' />
+            </div>
+            <div class="col"><button type='button' class='btn btn-primary' id='calculateByProducing'>TIMER & SATS</button></div>
+        </div>
+        <div class="row mb-3 align-items-end">
+            <div class="col"><span id='text-hours'>TIMER</span></div>
+            <div class="col">
+                <span class="text d-none text-danger">Dette feltet er obligatorisk</span>
+                <input type='number' class='form-control' id='hours' step='0.1' />
+            </div>
+            <div class="col"><button id='calculateByHours' type='button' class='btn btn-primary'>SATS</button></div>
+        </div>
+        <div class="row mb-5 align-items-end">
+            <div class="col"><span id='text-rate'>SATS</span></div>
+            <div class="col">
+                <span class="text d-none">Dette feltet er obligatorisk</span>
+                <input type='number' class='form-control' id='rate' value='237' />
+            </div>
+            <div class="col"><button id='calculateByRate' type='button' class='btn btn-primary'>MENGDE</button></div>
+        </div>
+        <div class="row">
+            <div>
+                <button type='button' id='clean' class='btn btn-success w-100'>RENGJØR ALLE FELT</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const CALCULATEBYRATEBTN = document.getElementById('calculateByRate')
+        const CALCULATEBYPRODUCINGBTN = document.getElementById('calculateByProducing')
+        const CALCULATEBYPRODUCINGANDHOURSBTN = document.getElementById('calculateByHours')
+        const TEXTPRODUCING = document.getElementById('text-producing')
+        const HOURS = document.getElementById('hours')
+        const CLEANBTN = document.getElementById('clean')
+        const STANDARTRATE = 237
+
+
+        CALCULATEBYRATEBTN.addEventListener('click', () => {
+            const ACCORDMINIMUM = document.getElementById('accord')
+            const PRODUCING = document.getElementById('producing')
+            const RATE = document.getElementById('rate')
+            const CALCULATEDSTANDARTRATE = STANDARTRATE / ACCORDMINIMUM.value
+            let validation = null
+
+            validation = isValid(ACCORDMINIMUM)
+            if(!validation) return
+
+            HOURS.value = 1
+            PRODUCING.value = RATE.value / CALCULATEDSTANDARTRATE
+        })
+
+        CALCULATEBYPRODUCINGBTN.addEventListener('click', () => {
+            const ACCORDMINIMUM = document.getElementById('accord')
+            const PRODUCING = document.getElementById('producing')
+            const RATE = document.getElementById('rate')
+            let validation = []
+
+            !isValid(PRODUCING) ? validation.push(false) : true
+            !isValid(ACCORDMINIMUM) ? validation.push(false) : true
+            
+            if(validation.length > 0) return
+
+            const APPROXIMATELLYHOURS = Math.round(PRODUCING.value / ACCORDMINIMUM.value / 0.5) * 0.5
+            const CALCULATEDSTANDARTRATE = STANDARTRATE / ACCORDMINIMUM.value
+
+
+            HOURS.value = APPROXIMATELLYHOURS
+            RATE.value = (PRODUCING.value / APPROXIMATELLYHOURS) * CALCULATEDSTANDARTRATE
+        })
+
+        CALCULATEBYPRODUCINGANDHOURSBTN.addEventListener('click', () => {
+            const ACCORDMINIMUM = document.getElementById('accord')
+            const PRODUCING = document.getElementById('producing')
+            const RATE = document.getElementById('rate')
+            const HOURS = document.getElementById('hours')
+            let validation = null
+
+            validation = isValid(PRODUCING)
+            validation = isValid(ACCORDMINIMUM)
+            validation = isValid(RATE)
+            validation = isValid(HOURS)
+            if(!validation) return
+
+            const CALCULATEDSTANDARTRATE = STANDARTRATE / ACCORDMINIMUM.value
+            RATE.value = (PRODUCING.value / HOURS.value) * CALCULATEDSTANDARTRATE
+        })
+
+        CLEANBTN.addEventListener('click', () => {
+            const ACCORDMINIMUM = document.getElementById('accord')
+            const PRODUCING = document.getElementById('producing')
+            const RATE = document.getElementById('rate')
+            const HOURS = document.getElementById('hours')
+            const errorsInput = document.querySelectorAll('.error')
+            const errorsText = document.querySelectorAll('.text-danger')
+            console.log(errorsInput, errorsText)
+
+            errorsInput.forEach((el) => {
+                console.log(el)
+                el.classList.remove('error')
+            })
+
+            errorsText.forEach((el) => {
+                el.classList.add('d-none')
+            })
+
+            ACCORDMINIMUM.value = ''
+            PRODUCING.value = ''
+            HOURS.value = ''
+            RATE.value = 237
+        })
+
+        function isValid(field) {
+            if(!field.value || field.value == 0 ) {
+                field.previousElementSibling.classList.remove('d-none')
+                field.classList.add('error')
+                return false
+            } else {
+                field.previousElementSibling.classList.add('d-none')
+                field.classList.remove('error')
+                return true
+            }
+        }
+
+
+    </script>
+</body>
+
+</html>
